@@ -1,12 +1,10 @@
-import * as chai from "chai";
-import chaiHttp from "chai-http";
-import { startServer, server } from "../src/index.js"; // Ajuste o caminho conforme necessário
+import { expect, use } from "chai";
+import { default as chaiHttp } from "chai-http";
+import { server } from "../src/index.js";
 
-chai.use(chaiHttp); // Certifique-se de que isso está aqui
-const { expect } = chai;
+const chai = use(chaiHttp);
 
 before((done) => {
-  startServer();
   done();
 });
 
@@ -16,20 +14,20 @@ after((done) => {
 });
 
 describe("api()", () => {
-  it("Deve retornar true quando mongoDB conectar com sucesso", () => {
+  it("Deve retornar true quando mongoDB conectar com sucesso", (done) => {
     expect(true).to.equal(true);
     done();
   });
 
-  //   it("Deve retornar um erro quando falhar a conexão");
+  it("Deve retornar um erro quando falhar a conexão");
 
-  //   it("Deve retornar 200 quando o servidor estiver rodando", (done) => {
-  //     chai
-  //       .request(server) // Aqui é onde o erro ocorre
-  //       .get("/")
-  //       .end((err, res) => {
-  //         expect(res).to.have.status(200);
-  //         done();
-  //       });
-  //   });
+  it("Deve retornar 200 quando o servidor estiver rodando", (done) => {
+    chai.request
+      .execute(server) // Aqui é onde o erro ocorre
+      .get("/")
+      .end((err, res) => {
+        expect(res).to.have.status(200);
+        done();
+      });
+  });
 });

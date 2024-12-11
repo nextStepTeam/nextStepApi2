@@ -1,52 +1,66 @@
-import * as chai from "chai";
-import chaiHttp from "chai-http";
-import { startServer, server } from "../src/index.js";
+import mongoose from "mongoose";
+import { expect, use } from "chai";
+import { default as chaiHttp } from "chai-http";
+import { server } from "../src/index.js";
 
-chai.use(chaiHttp);
-const { expect } = chai;
+const chai = use(chaiHttp);
+chai.should();
 
 before((done) => {
-  startServer();
   done();
 });
 
-after(async () => {
+after(async (done) => {
+  mongoose.connection.db.dropDatabase();
   if (server) {
-    server.close(); // Fecha o servidor
+    server.close();
   }
   done();
-  // if (mongoose.connection) {
-  //   await mongoose.connection.close(); // Fecha a conexão do MongoDB
-  // }
 });
 
 const userSchema = {
   username: "string",
   email: "string",
-  password: "string",
 };
 
 describe("Users", () => {
-  it("Deve retornar 200 para rota users", () => {
-    chai
-      .request(server)
+  it("Deve retornar 200 para rota users", (done) => {
+    chai.request
+      .execute(server)
       .get("/users")
       .end((err, res) => {
         expect(res).to.have.status(200);
         done();
       });
-    done();
   });
 
   it("Deve retornar 201 quando enviar os dados corretos para o registro do usuário", (done) => {
-    chai
-      .request(server)
+    chai.request
+      .execute(server)
       .post("/users/register")
-      .send({ username: "teste", email: "teste@teste.com", password: "12345" })
+      .send({
+        username: "teste 1",
+        email: "testecertoA@teste.com",
+        password: "12345",
+      })
       .end((err, res) => {
-        chai.expect(res.body).to.containSubset([userSchema]);
+        chai.expect(res).to.have.status(201);
         done();
       });
-    done();
+  });
+
+  it("Deve retornar 409 para usuário que já existe", (done) => {
+    chai.request
+      .execute(server)
+      .post("/users/register")
+      .send({
+        username: "teste 1",
+        email: "testecertoA@teste.com",
+        password: "12345",
+      })
+      .end((err, res) => {
+        chai.expect(res).to.have.status(409);
+        done();
+      });
   });
 });
